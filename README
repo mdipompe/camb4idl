@@ -1,0 +1,17 @@
+IDL Wrapper for CAMB.
+
+Need to set environment variable CAMB_DIR to the location of your CAMB 
+executable if you are going to call CAMB (see below)
+
+Without /runcamb set, will just make a parameter file for you.  With it set, 
+will call CAMB, and read in/parse the CAMB output files, returning results
+as a structure with several tags depending on you CAMB settings.
+
+One of my motivations was to quickly make param files with many redshifts
+for the transfer function/power spectrum.  You can pass transfer_redshift
+an array of redshifts (make sure they are from high to low!), along with
+arrays of output file names for transfer_filename and transfer_matterpower 
+(these are all easy to generate in an automated way on your own), and it 
+will format the param file and parse the output file for you.
+
+Currently, vector modes are not well tested!
