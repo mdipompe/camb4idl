@@ -3,7 +3,8 @@
 ;    camb4idl
 ;
 ;  PURPOSE:
-;    IDL wrapper for fortran90 CAMB, which you should have installed somewhere
+;    IDL wrapper for fortran90 CAMB, which you should have installed
+;    somewhere (the env variable CAMB_DIR should point there)
 ;
 ;  USE:
 ;    result=camb4idl(paramfile='input_params.ini',outparamfile='output_params.ini',/runcamb,[camb_keys...])
@@ -246,10 +247,26 @@ FOR i=0L,n_elements(defaults)-1 DO BEGIN
    ENDELSE
 ENDFOR
 close,1
+
+;MAD Reorder what was done into scalar, vector, tensor, trans, lensing 
 done=done[1:n_elements(done)-1]
+done2=['S','V','T','tr','l']
+FOR i=0L,n_elements(done2)-1 DO BEGIN
+   xx=where(done2[i] EQ done)
+   IF (xx[0] EQ -1) THEN done2[i]='N'
+ENDFOR
+done=done2
+
+;MAD If nothing is set to be calculated, then you must have just
+;wanted to make a parameter file, and set runcamb by mistake
+IF (done[0] EQ 'N' AND done[1] EQ 'N' AND done[2] EQ 'N') THEN oops=1 ELSE oops=0
+IF (keyword_set(runcamb) AND oops EQ 1) THEN BEGIN
+   print, 'CAMB4IDL - You said to run CAMB but don''t want to calculate anything? Returning...'
+   return,oops
+ENDIF
 
 ;MAD Run CAMB, if desired
-IF keyword_set(runcamb) THEN BEGIN
+IF (keyword_set(runcamb) AND oops EQ 0) THEN BEGIN
    ;MAD Copy over file needed to run CAMB in current directory
    cmd=['cp',filepath('HighLExtrapTemplate_lenspotentialCls.dat', root_dir=getenv('CAMB_DIR')),'.']
    spawn,cmd,/noshell
@@ -259,7 +276,7 @@ IF keyword_set(runcamb) THEN BEGIN
    print,'CAMB4IDL - Calling CAMB with: ' + cmd[0] + ' ' + cmd[1]
    spawn,cmd,camboutput,/noshell
 
-   cambres=parse_cambout(camboutput)
+   cambres=parse_cambout(camboutput,done,nz)
    
    ;MAD Read in outputs
    cambout=read_camb_output(done,outfiles)

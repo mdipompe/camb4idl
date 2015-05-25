@@ -20,6 +20,10 @@
 ;-
 FUNCTION read_camb_output,used,files
   tmp=create_struct('tmp',0)
+  ;Reorder what was used into scaler, vector, tensor, transfer, lensing
+  xx=where(used EQ 'T')
+  
+
   IF (used[0] EQ 'S') THEN BEGIN     ;Scalar cls
      scalcls=read_matrix(files.scalar_output_file)
      tmp=create_struct(tmp,'scalar_cls',scalcls)
