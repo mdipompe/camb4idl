@@ -15,3 +15,8 @@ arrays of output file names for transfer_filename and transfer_matterpower
 will format the param file and parse the output file for you.
 
 Currently, vector modes are not well tested!
+
+
+The function sig8_to_scalamp.pro will take a value of sigma_8, and return
+the appropriate value of the scalar amplitude to pass to CAMB to get
+that sigma_8 at z=0.
