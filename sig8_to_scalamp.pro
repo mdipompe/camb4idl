@@ -19,6 +19,7 @@
 ;    omega_m - Omega_matter, defaults to 0.273
 ;    omega_l - Omega_lambda, defaults to 0.727
 ;    omega_b - omega_baryon, defaults to 0.046
+;    spec_ind - power spectrum spectral index, defaults to 0.96
 ;
 ;  OUTPUT:
 ;    scalamp - the value you should set for scalar amplitude in CAMB
@@ -29,10 +30,11 @@
 ;
 ;  HISTORY:
 ;    11-7-15 - Written - MAD (Dartmouth)
+;    11-30-15 - Added power spectrum spectral index n - MAD (Dartmouth)
 ;-
 FUNCTION sig8_to_scalamp,sigma8,paramfile=paramfile,$
                            h0=h0,omega_m=omega_m,omega_l=omega_l,$
-                           omega_b=omega_b
+                           omega_b=omega_b,spec_ind=spec_ind
 
 ;MAD Set defaults  
 IF ~keyword_set(paramfile) THEN paramfile='default_params.ini'
@@ -40,6 +42,7 @@ IF ~keyword_set(h0) THEN h0=0.702
 IF ~keyword_set(omega_m) THEN omega_m=0.275
 IF ~keyword_set(omega_b) THEN omega_b=0.046
 IF ~keyword_set(omega_l) THEN omega_l=0.725
+IF ~keyword_set(spec_ind) THEN spec_ind=0.96
 omega_dm=omega_m-omega_b
 
 ;MAD CALL CAMB with test scalar_amp 2e-9
@@ -47,7 +50,9 @@ res=camb4idl(/runcamb, paramfile=paramfile,output_root='thesearecambtestfiles_',
              outparamfile='thesearecambtestfiles_out.ini', $
              get_scalar='T',get_transfer='T', $
              get_tensor='F',do_lensing='T', $
+             do_nonlinear=0, $
              scalar_amp=2e-9, $
+             scalar_spectral_index=spec_ind, $
              transfer_redshift=0, $
              transfer_filename='transfer_0.dat',$
              transfer_matterpower='transfer_0.dat', $
