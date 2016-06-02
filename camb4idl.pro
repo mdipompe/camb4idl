@@ -144,7 +144,6 @@ FUNCTION get_outfile,key,val,root
                'lens_potential_output_file']
 
   xx=where(key EQ output_list)
-  
   return,create_struct(output_list[xx],root+'_'+val)
 END
 
@@ -602,13 +601,14 @@ END
 ;    You shouldn't put a list of redshifts/files in the default param
 ;    file by hand (even if just two) - let the code do it for you.
 ;
-;    Note that if you set
-;    transfer_redshift to an array with n_elements > 1, you must also
-;    set transfer_filename and transfer_matterpower to string arrays
-;    of the same length.  CAMB will only do up to 150 redshifts at a time.
+;    CAMB will only do up to 150 redshifts at a time.
 ;
 ;  HISTORY:
 ;    5-22-15 - Written - MAD (UWyo)
+;    6-2-16 - Improved multiple redshift functionality.  If given
+;             multiple redshifts, auto sets transfer_num_redshifts
+;             and will make default output file names if not supplied.
+;             - MAD (Dartmouth)
 ;-
 FUNCTION camb4idl,paramfile=paramfile,outparamfile=outparamfile,runcamb=runcamb,$
                  output_root=output_root, $
@@ -728,6 +728,32 @@ defaults=read_defaults(paramfile)
 ;MAD Get list of keywords to check
 params=routine_info('camb4idl',/parameters,/functions)
 params=params.kw_args
+
+;MAD If given an array of redshifts, set transfer_num_redshifts
+;properly, and make default ouptut filenames if not supplied
+IF keyword_set(transfer_redshift) THEN BEGIN
+   IF (n_elements(transfer_redshift) GT 1) THEN BEGIN
+      transfer_num_redshifts = n_elements(transfer_redshift)
+      IF ~keyword_set(transfer_filename) THEN BEGIN
+         FOR i=0,n_elements(transfer_redshift)-1 DO BEGIN
+            IF (n_elements(transfer_filename) EQ 0) THEN $
+               transfer_filename='transfer_' + strtrim(transfer_redshift[i],2) + '.dat' ELSE $
+                  transfer_filename=[transfer_filename, $
+                                     'transfer_' + strtrim(transfer_redshift[i],2) + '.dat']
+         ENDFOR
+      ENDIF
+      IF ~keyword_set(transfer_matterpower) THEN BEGIN
+         FOR i=0,n_elements(transfer_redshift)-1 DO BEGIN
+            IF (n_elements(transfer_matterpower) EQ 0) THEN $
+               transfer_matterpower='matterpower_' + strtrim(transfer_redshift[i],2) + '.dat' ELSE $
+                  transfer_matterpower=[transfer_matterpower, $
+                                     'matterpower_' + strtrim(transfer_redshift[i],2) + '.dat']
+         ENDFOR
+      ENDIF
+   ENDIF
+ENDIF
+
+
 
 ;MAD Initialize output param file
 openw,1,outparamfile
